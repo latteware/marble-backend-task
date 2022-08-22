@@ -1,5 +1,5 @@
 {
-  "name": "@marble-seeds/backend-module-template",
+  "name": "@marble-seeds/tasks",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -7,16 +7,8 @@
     "test": "mocha test/**/*.js",
     "lint": "standard"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/latteware/marble-backend-module-template.git"
-  },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/latteware/marble-backend-module-template/issues"
-  },
-  "homepage": "https://github.com/latteware/marble-backend-module-template#readme",
   "devDependencies": {
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
@@ -26,5 +18,9 @@
   "pre-commit": [
     "lint",
     "test"
-  ]  
+  ],
+  "dependencies": {
+    "co": "^4.6.0",
+    "minimist": "^1.2.6"
+  }
 }
