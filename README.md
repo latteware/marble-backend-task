@@ -28,3 +28,17 @@ if (require.main === module) {
 ```
 
 The last part will allow you to call it as a CLI or be loaded on your app and run as part of you app
+
+## Task API
+
+### constructor
+
+Takes a task action(function) and a timeout as params.
+
+### run
+
+Runs the task action asynchronously. Takes the function arguments and a config object with a timeout option.
+
+### setCliHandlers
+
+Lets the taks that it will run as a CLI program.
