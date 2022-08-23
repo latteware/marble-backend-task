@@ -1,11 +1,13 @@
 const parseArgs = require('minimist')
-const co = require('co')
 const lov = require('lov')
 
 const Task = class Task {
   constructor (fn, timeout = 10) {
     this._fn = fn
     this._schema = null
+    this._recorder = null
+
+    // TODO: legacy implementation from marble seeds, change for a option object
     this._timeout = timeout
   }
 
@@ -29,30 +31,55 @@ const Task = class Task {
     return lov.validate(argv, this._schema)
   }
 
+  addRecorder (fn) {
+    this._recorder = fn
+  }
+
+  removeRecorder () {
+    this._recorder = null
+  }
+
   run (argv) {
-    const wrap = co.wrap(this._fn)
     argv = argv || parseArgs(process.argv.slice(2))
 
-    const isValid = this.validate(argv)
+    const q = new Promise((resolve, reject) => {
+      const isValid = this.validate(argv)
 
-    if (isValid.error) {
-      throw isValid.error
-    }
+      if (isValid.error) {
+        if (this._recorder) {
+          this._recorder({ input: argv, error: isValid.error })
+        }
 
-    let q
-    if (argv.asBackground) {
-      q = this.runAsBackgroundJob(argv)
-    } else {
-      q = wrap(argv)
-    }
+        throw isValid.error
+      }
+
+      (async () => {
+        let output, e
+        try {
+          output = this._fn(argv)
+        } catch (error) {
+          if (this._recorder) {
+            this._recorder({ input: argv, error })
+          }
+          e = error
+          reject(error)
+        }
+
+        if (!e) {
+          if (this._recorder) {
+            this._recorder({ input: argv, output })
+          }
+          resolve(output)
+        }
+      })()
+    })
 
     if (this._cli) {
-      q.then(data => {
-        console.log('Success =>', data)
-
+      q.then(output => {
+        console.log('Success =>', output)
         setTimeout(() => process.exit(), this._timeout)
-      }).catch(err => {
-        console.error('=>', err)
+      }).catch(error => {
+        console.error('=>', error)
         process.nextTick(() => process.exit(1))
       })
     }
