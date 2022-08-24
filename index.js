@@ -1,14 +1,17 @@
 const parseArgs = require('minimist')
 const lov = require('lov')
 
+const Boundary = require('./utils/boundary')
+
 const Task = class Task {
-  constructor (fn, timeout = 10) {
+  constructor (fn, conf = {}) {
     this._fn = fn
     this._schema = null
     this._recorder = null
 
-    // TODO: legacy implementation from marble seeds, change for a option object
-    this._timeout = timeout
+    this._boundaries = conf.boundaries || {}
+    this._boundariesTape = conf.boundariesTape || {}
+    this._timeout = conf._timeout
   }
 
   setCliHandlers () {
@@ -39,8 +42,26 @@ const Task = class Task {
     this._recorder = null
   }
 
+  _createBounderies (boundaries, tape) {
+    const boundariesFns = {}
+
+    for (const name in boundaries) {
+      const boundary = new Boundary(this._boundaries[name])
+
+      if (this._boundariesTape[name]) {
+        boundary.setMode('replay')
+        boundary.loadTape(this._boundariesTape[name])
+      }
+
+      boundariesFns[name] = boundary
+    }
+
+    return boundariesFns
+  }
+
   run (argv) {
     argv = argv || parseArgs(process.argv.slice(2))
+    const boundaries = this._createBounderies(this._boundaries, this._boundariesTape)
 
     const q = new Promise((resolve, reject) => {
       const isValid = this.validate(argv)
@@ -56,7 +77,7 @@ const Task = class Task {
       (async () => {
         let output, e
         try {
-          output = this._fn(argv)
+          output = await this._fn(argv, boundaries)
         } catch (error) {
           if (this._recorder) {
             this._recorder({ input: argv, error })
