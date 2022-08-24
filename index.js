@@ -1,14 +1,19 @@
 const parseArgs = require('minimist')
 const lov = require('lov')
 
+const Boundary = require('./utils/boundary')
+
 const Task = class Task {
-  constructor (fn, timeout = 10) {
+  constructor (fn, conf = {}) {
     this._fn = fn
     this._schema = null
     this._recorder = null
 
-    // TODO: legacy implementation from marble seeds, change for a option object
-    this._timeout = timeout
+    this._boundariesDefinition = conf.boundaries || {}
+    this._boundariesTape = conf.boundariesTape || {}
+
+    this._boundaries = this._createBounderies(this._boundariesDefinition, this._boundariesTape)
+    this._timeout = conf._timeout
   }
 
   setCliHandlers () {
@@ -39,8 +44,38 @@ const Task = class Task {
     this._recorder = null
   }
 
+  _createBounderies (boundaries, tape) {
+    const boundariesFns = {}
+
+    for (const name in boundaries) {
+      const boundary = new Boundary(boundaries[name])
+
+      if (tape[name]) {
+        boundary.setMode('replay')
+        boundary.loadTape(tape[name])
+      }
+
+      boundariesFns[name] = boundary
+    }
+
+    return boundariesFns
+  }
+
+  _getBondaryTape (boundaries) {
+    const boundariesTape = {}
+
+    for (const name in boundaries) {
+      const boundary = boundaries[name]
+
+      boundariesTape[name] = boundary.getTape()
+    }
+
+    return boundariesTape
+  }
+
   run (argv) {
     argv = argv || parseArgs(process.argv.slice(2))
+    const boundaries = this._boundaries
 
     const q = new Promise((resolve, reject) => {
       const isValid = this.validate(argv)
@@ -56,10 +91,10 @@ const Task = class Task {
       (async () => {
         let output, e
         try {
-          output = this._fn(argv)
+          output = await this._fn(argv, boundaries)
         } catch (error) {
           if (this._recorder) {
-            this._recorder({ input: argv, error })
+            this._recorder({ input: argv, error }, this._getBondaryTape(boundaries))
           }
           e = error
           reject(error)
@@ -67,7 +102,7 @@ const Task = class Task {
 
         if (!e) {
           if (this._recorder) {
-            this._recorder({ input: argv, output })
+            this._recorder({ input: argv, output }, this._getBondaryTape(boundaries))
           }
           resolve(output)
         }
