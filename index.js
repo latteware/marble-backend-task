@@ -74,7 +74,12 @@ const Task = class Task {
   }
 
   run (argv) {
-    argv = argv || parseArgs(process.argv.slice(2))
+    // ToDo: have a better CLI handler, probably move of the task runner
+    const cliArgs = parseArgs(process.argv.slice(2))
+    delete cliArgs._
+    argv = argv || cliArgs
+    // End ToDo block
+
     const boundaries = this._boundaries
 
     const q = new Promise((resolve, reject) => {

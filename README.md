@@ -42,3 +42,9 @@ Runs the task action asynchronously. Takes the function arguments and a config o
 ### setCliHandlers
 
 Lets the taks that it will run as a CLI program.
+
+
+# ToDos
+
+- CLI run test and argv handler
+- Document boundaries
