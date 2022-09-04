@@ -7,10 +7,28 @@ const Task = class Task {
   constructor (fn, conf = {}) {
     this._fn = fn
     this._schema = null
-    this._recorder = null
 
     this._boundariesDefinition = conf.boundaries || {}
     this._boundariesTape = conf.boundariesTape || {}
+
+    // Recorder hooks
+    this._recordTo = conf.recordTo || null
+    if (this._recordTo) {
+      this._recorder = async (logItem, boundaries) => {
+        const tape = this._recordTo
+
+        // ToDo:
+        // - Create a way to push logs to the tape each run
+        // - Create a way to update boundaries if the input already exist
+        // - Save async
+        tape.saveSync({
+          log: [logItem],
+          boundaries
+        })
+      }
+    } else {
+      this._recorder = null
+    }
 
     this._boundaries = this._createBounderies(this._boundariesDefinition, this._boundariesTape)
     this._timeout = conf._timeout
@@ -42,6 +60,10 @@ const Task = class Task {
 
   removeRecorder () {
     this._recorder = null
+  }
+
+  getTape () {
+    return this._recordTo
   }
 
   _createBounderies (boundaries, tape) {
