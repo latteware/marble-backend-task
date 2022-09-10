@@ -17,14 +17,11 @@ const Task = class Task {
       this._recorder = async (logItem, boundaries) => {
         const tape = this._recordTo
 
+        tape.addLogItem(logItem)
         // ToDo:
-        // - Create a way to push logs to the tape each run
-        // - Create a way to update boundaries if the input already exist
-        // - Save async
-        tape.saveSync({
-          log: [logItem],
-          boundaries
-        })
+        // - Create a way to update boundaries atomicaly if the input already exist
+        tape.addBoundariesData(boundaries)
+        tape.saveSync()
       }
     } else {
       this._recorder = null
