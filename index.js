@@ -6,7 +6,8 @@ const Boundary = require('./utils/boundary')
 const Task = class Task {
   constructor (fn, conf = {}) {
     this._fn = fn
-    this._schema = null
+    // review how to add it in the same from on API and task
+    this._schema = conf.validate || null
 
     this._boundariesDefinition = conf.boundaries || {}
     this._boundariesTape = conf.boundariesTape || {}
@@ -14,6 +15,8 @@ const Task = class Task {
     // Recorder hooks
     this._recordTo = conf.recordTo || null
     if (this._recordTo) {
+      // ToDo: Change to so this block is part of the RecordTape
+      // this._recorder = this._recordTo.getRecorder()
       this._recorder = async (logItem, boundaries) => {
         const tape = this._recordTo
 
@@ -21,6 +24,9 @@ const Task = class Task {
         // ToDo:
         // - Create a way to update boundaries atomicaly if the input already exist
         tape.addBoundariesData(boundaries)
+
+        // Move to async update
+        // Add a way to only update on replay
         tape.saveSync()
       }
     } else {
