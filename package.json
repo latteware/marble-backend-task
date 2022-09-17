@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha tests/**/*.js",
     "coverage": "nyc npm run test",
+    "coverage-report": "nyc  --reporter=html npm run test",
     "lint": "standard"
   },
   "author": "Siedrix",

@@ -18,6 +18,23 @@ const TapeMock = class {
   getBoundaries () {
     return this._boundaries
   }
+
+  addLogItem (item) {
+    if (this._mode === 'replay') {
+      return
+    }
+
+    if (
+      (item.input && item.output) ||
+      (item.input && item.error)
+    ) {
+      return this._log.push(item)
+    }
+  }
+
+  addBoundariesData (boundaries) {
+    this._boundaries = boundaries
+  }
 }
 
 describe('RecordTo tests', function () {
@@ -58,5 +75,34 @@ describe('RecordTo tests', function () {
 
     const boundaryTape = boundaries.getFileContent.getTape()
     expect(boundaryTape.length).to.equal(0)
+  })
+
+  it('Should have on boundaty loaded at the start', async function () {
+    const mockTape = new TapeMock({ ...getPackageJsonTape })
+
+    const task = new Task(async (argv, { getFileContent }) => {
+      await getFileContent(argv)
+
+      return argv
+    }, {
+      boundaries: {
+        getFileContent: async ({ org, repo, filePath }) => {
+          return { org, repo, filePath }
+        }
+      },
+      recordTo: mockTape
+    })
+
+    await task.run({
+      org: 'latteware',
+      repo: 'repo',
+      filePath: 'package.json'
+    })
+
+    const boundaries = task.getBoundaries()
+    expect(boundaries.getFileContent).to.not.equal(undefined)
+
+    const boundaryTape = boundaries.getFileContent.getTape()
+    expect(boundaryTape.length).to.equal(2)
   })
 })
