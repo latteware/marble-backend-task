@@ -19,7 +19,6 @@ const Task = class Task {
 
     // Recorder hooks
     this._recordTo = conf.recordTo || null
-
     if (this._recordTo) {
       this.setRecorder(this._recordTo)
     }
