@@ -20,7 +20,7 @@ describe('Listener tests', function () {
     expect(tape[0].output).to.deep.equal({ value: 5 })
   })
 
-  it('Should be record excution error', async function () {
+  it('Should be record execution error', async function () {
     const tape = []
     const task = new Task(function (argv) {
       throw new Error('This should happen')
@@ -36,7 +36,7 @@ describe('Listener tests', function () {
 
     expect(tape.length).to.equal(1)
     expect(tape[0].input).to.deep.equal({ value: 5 })
-    expect(tape[0].error.message).to.deep.equal('This should happen')
+    expect(tape[0].error).to.deep.equal('This should happen')
   })
 
   it('Should be record validation error', async function () {
@@ -59,7 +59,7 @@ describe('Listener tests', function () {
 
     expect(tape.length).to.equal(1)
     expect(tape[0].input).to.deep.equal({ value: null })
-    expect(tape[0].error.message).to.deep.equal('value: missing required value')
+    expect(tape[0].error).to.deep.equal('value: missing required value')
   })
 
   it('Should be multiple records', async function () {
