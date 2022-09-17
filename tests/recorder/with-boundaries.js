@@ -18,7 +18,7 @@ describe('Record with boundaries tests', function () {
       }
     })
 
-    task.addRecorder((record, newBoundariesTape) => {
+    task.addListener((record, newBoundariesTape) => {
       tape.push(record)
       boundariesTape = newBoundariesTape
     })
@@ -51,7 +51,7 @@ describe('Record with boundaries tests', function () {
       }
     })
 
-    task.addRecorder((record, newBoundariesTape) => {
+    task.addListener((record, newBoundariesTape) => {
       tape.push(record)
 
       boundariesTape = newBoundariesTape
@@ -93,7 +93,7 @@ describe('Record with boundaries tests', function () {
       }
     })
 
-    task.addRecorder((record, newBoundariesTape) => {
+    task.addListener((record, newBoundariesTape) => {
       tape.push(record)
       boundariesTape = newBoundariesTape
     })
@@ -131,7 +131,7 @@ describe('Record with boundaries tests', function () {
       }
     })
 
-    task.addRecorder((record, newBoundariesTape) => {
+    task.addListener((record, newBoundariesTape) => {
       tape.push(record)
       boundariesTape = newBoundariesTape
     })

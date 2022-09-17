@@ -2,14 +2,14 @@
 const lov = require('lov')
 const Task = require('../../index')
 
-describe('Record tests', function () {
+describe('Listener tests', function () {
   it('Should be record one item', async function () {
     const tape = []
     const task = new Task(function (argv) {
       return argv
     })
 
-    task.addRecorder((record) => {
+    task.addListener((record) => {
       tape.push(record)
     })
 
@@ -26,7 +26,7 @@ describe('Record tests', function () {
       throw new Error('This should happen')
     })
 
-    task.addRecorder((record) => {
+    task.addListener((record) => {
       tape.push(record)
     })
 
@@ -49,7 +49,7 @@ describe('Record tests', function () {
       value: lov.number().required()
     })
 
-    task.addRecorder((record) => {
+    task.addListener((record) => {
       tape.push(record)
     })
 
@@ -68,7 +68,7 @@ describe('Record tests', function () {
       return argv
     })
 
-    task.addRecorder((record) => {
+    task.addListener((record) => {
       tape.push(record)
     })
 
@@ -89,7 +89,7 @@ describe('Record tests', function () {
       return argv
     })
 
-    task.addRecorder((record) => {
+    task.addListener((record) => {
       tape.push(record)
     })
 

@@ -11,13 +11,15 @@ const Task = class Task {
 
     this._boundariesDefinition = conf.boundaries || {}
     this._boundariesTape = conf.boundariesTape || {}
+    this._boundaries = this._createBounderies(this._boundariesDefinition, this._boundariesTape)
+    this._listener = null
 
     // Recorder hooks
     this._recordTo = conf.recordTo || null
     if (this._recordTo) {
       // ToDo: Change to so this block is part of the RecordTape
-      // this._recorder = this._recordTo.getRecorder()
-      this._recorder = async (logItem, boundaries) => {
+      // this._listener = this._recordTo.getRecorder()
+      this._listener = async (logItem, boundaries) => {
         const tape = this._recordTo
 
         tape.addLogItem(logItem)
@@ -29,12 +31,13 @@ const Task = class Task {
         // Add a way to only update on replay
         tape.saveSync()
       }
-    } else {
-      this._recorder = null
+
+      // Set up initial bonderies
+      this._boundaries = this._createBounderies(this._boundariesDefinition, this._recordTo.getBoundaries(), this._recordTo.getMode())
     }
 
-    this._boundaries = this._createBounderies(this._boundariesDefinition, this._boundariesTape)
-    this._timeout = conf._timeout
+    // Cool down time before killing the process on cli runner
+    this._coolDown = 1000
   }
 
   setCliHandlers () {
@@ -57,27 +60,33 @@ const Task = class Task {
     return lov.validate(argv, this._schema)
   }
 
-  addRecorder (fn) {
-    this._recorder = fn
+  addListener (fn) {
+    this._listener = fn
   }
 
   removeRecorder () {
-    this._recorder = null
+    this._listener = null
   }
 
   getTape () {
     return this._recordTo
   }
 
-  _createBounderies (boundaries, tape) {
+  getBoundaries () {
+    return this._boundaries
+  }
+
+  _createBounderies (boundaries, tapes, mode = 'proxy') {
     const boundariesFns = {}
 
     for (const name in boundaries) {
       const boundary = new Boundary(boundaries[name])
 
-      if (tape[name]) {
-        boundary.setMode('replay')
-        boundary.loadTape(tape[name])
+      if (tapes && tapes[name]) {
+        const tape = tapes[name]
+
+        boundary.setMode(mode)
+        boundary.loadTape(tape)
       }
 
       boundariesFns[name] = boundary
@@ -111,8 +120,8 @@ const Task = class Task {
       const isValid = this.validate(argv)
 
       if (isValid.error) {
-        if (this._recorder) {
-          this._recorder({ input: argv, error: isValid.error })
+        if (this._listener) {
+          this._listener({ input: argv, error: isValid.error }, this._getBondaryTape(boundaries))
         }
 
         throw isValid.error
@@ -123,16 +132,16 @@ const Task = class Task {
         try {
           output = await this._fn(argv, boundaries)
         } catch (error) {
-          if (this._recorder) {
-            this._recorder({ input: argv, error }, this._getBondaryTape(boundaries))
+          if (this._listener) {
+            this._listener({ input: argv, error }, this._getBondaryTape(boundaries))
           }
           e = error
           reject(error)
         }
 
         if (!e) {
-          if (this._recorder) {
-            this._recorder({ input: argv, output }, this._getBondaryTape(boundaries))
+          if (this._listener) {
+            this._listener({ input: argv, output }, this._getBondaryTape(boundaries))
           }
           resolve(output)
         }
@@ -142,7 +151,7 @@ const Task = class Task {
     if (this._cli) {
       q.then(output => {
         console.log('Success =>', output)
-        setTimeout(() => process.exit(), this._timeout)
+        setTimeout(() => process.exit(), this._coolDown)
       }).catch(error => {
         console.error('=>', error)
         process.nextTick(() => process.exit(1))
