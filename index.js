@@ -76,8 +76,14 @@ const Task = class Task {
     return lov.validate(argv, this._schema)
   }
 
+  // Listen and emit to make it easy to have hooks
+  // Posible improvement to handle multiple listeners, but so far its not needed
   addListener (fn) {
     this._listener = fn
+  }
+
+  removeListener () {
+    this._listener = null
   }
 
   /*
@@ -91,10 +97,6 @@ const Task = class Task {
         this._getBondaryTape(this._boundaries)
       )
     }
-  }
-
-  removeRecorder () {
-    this._listener = null
   }
 
   getTape () {

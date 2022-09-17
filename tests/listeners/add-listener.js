@@ -95,7 +95,7 @@ describe('Listener tests', function () {
 
     await task.run({ value: 5 })
 
-    task.removeRecorder()
+    task.removeListener()
     await task.run({ value: 6 })
 
     expect(tape.length).to.equal(1)
