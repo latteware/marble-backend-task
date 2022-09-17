@@ -10,7 +10,7 @@
     },
     {
       "input": {},
-      "error": {}
+      "error": "org: missing required value"
     }
   ],
   "boundaries": {
