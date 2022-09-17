@@ -1,11 +1,12 @@
 {
   "name": "@marble-seeds/task",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "mocha tests/**/*.js",
     "coverage": "nyc npm run test",
+    "coverage-report": "nyc  --reporter=html npm run test",
     "lint": "standard"
   },
   "author": "Siedrix",
