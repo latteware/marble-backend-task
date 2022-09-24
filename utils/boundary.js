@@ -4,10 +4,33 @@ const Boundary = function (fn) {
   let tape = []
   let mode = 'proxy'
 
+  const findRecord = (record) => {
+    return tape.find(item => {
+      let error
+      try {
+        assert.deepEqual(record, item.input)
+      } catch (e) {
+        error = e
+      }
+
+      return !error
+    })
+  }
+
   const action = async function () {
     const argv = [...arguments] // convert to array
     const record = {
       input: argv
+    }
+
+    if (mode === 'proxy-pass') {
+      const record = findRecord(argv)
+
+      if (record) {
+        return await (async () => {
+          return record.output
+        })()
+      }
     }
 
     if (mode === 'replay') {
@@ -44,10 +67,17 @@ const Boundary = function (fn) {
       }
 
       if (error) {
-        record.error = error.message
-        tape.push(record)
+        const prevRecord = findRecord(argv)
+        if (mode === 'proxy-catch' && prevRecord) {
+          return await (async () => {
+            return prevRecord.output
+          })()
+        } else {
+          record.error = error.message
+          tape.push(record)
 
-        throw error
+          throw error
+        }
       } else {
         record.output = result
         tape.push(record)
@@ -63,6 +93,10 @@ const Boundary = function (fn) {
 
   action.loadTape = function (newTape) {
     tape = newTape
+  }
+
+  action.getMode = function (newMode) {
+    return mode
   }
 
   action.setMode = function (newMode) {

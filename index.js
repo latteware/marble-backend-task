@@ -8,12 +8,14 @@ const Task = class Task {
     this._fn = fn
     // review how to add it in the same from on API and task
     this._schema = conf.validate || null
+    this._mode = conf.mode || 'proxy'
 
     this._boundariesDefinition = conf.boundaries || {}
     this._boundariesTape = conf.boundariesTape || {}
     this._boundaries = this._createBounderies({
       definition: this._boundariesDefinition,
-      baseData: this._boundariesTape
+      baseData: this._boundariesTape,
+      mode: this._mode
     })
     this._listener = null
 
@@ -25,6 +27,20 @@ const Task = class Task {
 
     // Cool down time before killing the process on cli runner
     this._coolDown = 1000
+  }
+
+  getMode () {
+    return this._mode
+  }
+
+  setMode (mode) {
+    for (const name in this._boundaries) {
+      const boundary = this._boundaries[name]
+
+      boundary.setMode(mode)
+    }
+
+    this._mode = mode
   }
 
   setRecorder (recorder) {
@@ -120,9 +136,9 @@ const Task = class Task {
       if (baseData && baseData[name]) {
         const tape = baseData[name]
 
-        boundary.setMode(mode)
         boundary.loadTape(tape)
       }
+      boundary.setMode(mode)
 
       boundariesFns[name] = boundary
     }
