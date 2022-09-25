@@ -35,16 +35,7 @@ const Boundary = function (fn) {
 
     if (mode === 'replay') {
       return await (async () => {
-        const record = tape.find(item => {
-          let error
-          try {
-            assert.deepEqual(argv, item.input)
-          } catch (e) {
-            error = e
-          }
-
-          return !error
-        })
+        const record = findRecord(argv)
 
         if (!record) {
           throw new Error('No tape value for this inputs')
