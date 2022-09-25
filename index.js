@@ -19,12 +19,6 @@ const Task = class Task {
     })
     this._listener = null
 
-    // Recorder hooks
-    this._recordTo = conf.recordTo || null
-    if (this._recordTo) {
-      this.setRecorder(this._recordTo)
-    }
-
     // Cool down time before killing the process on cli runner
     this._coolDown = 1000
   }
@@ -41,35 +35,6 @@ const Task = class Task {
     }
 
     this._mode = mode
-  }
-
-  setRecorder (recorder) {
-    this._listener = async (logItem, boundaries) => {
-      const tape = this._recordTo
-
-      // Only update if mode is record
-      if (tape.getMode() === 'record') {
-        tape.addLogItem(logItem)
-
-        // ToDo:
-        // - Create a way to update boundaries atomicaly if the input already exist
-        tape.addBoundariesData(boundaries)
-
-        /*
-          Update save logic
-          - Should be an async update
-          - Probably marking tape as dirty and pass the save responsability to the tape owners
-        */
-        tape.saveSync()
-      }
-    }
-
-    // Set up initial bonderies
-    this._boundaries = this._createBounderies({
-      definition: this._boundariesDefinition,
-      baseData: this._recordTo.getBoundaries(),
-      mode: this._recordTo.getMode()
-    })
   }
 
   setCliHandlers () {
@@ -123,6 +88,17 @@ const Task = class Task {
     return this._boundaries
   }
 
+  setBoundariesTapes (boundariesTape) {
+    for (const name in this._boundaries) {
+      const boundary = this._boundaries[name]
+      const tape = boundariesTape && boundariesTape[name]
+
+      if (boundary && tape) {
+        boundary.setTape(tape)
+      }
+    }
+  }
+
   _createBounderies ({
     definition,
     baseData,
@@ -136,7 +112,7 @@ const Task = class Task {
       if (baseData && baseData[name]) {
         const tape = baseData[name]
 
-        boundary.loadTape(tape)
+        boundary.setTape(tape)
       }
       boundary.setMode(mode)
 

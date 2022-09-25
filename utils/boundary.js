@@ -82,7 +82,7 @@ const Boundary = function (fn) {
     return tape
   }
 
-  action.loadTape = function (newTape) {
+  action.setTape = function (newTape) {
     tape = newTape
   }
 
