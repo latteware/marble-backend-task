@@ -80,10 +80,6 @@ const Task = class Task {
     }
   }
 
-  getTape () {
-    return this._recordTo
-  }
-
   getBoundaries () {
     return this._boundaries
   }
