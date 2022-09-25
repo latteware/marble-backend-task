@@ -25,4 +25,21 @@ describe('Base test', function () {
     expect(six).to.equal(6)
     expect(seven).to.equal(7)
   })
+
+  it('getMode proxy test', async function () {
+    const proxy = new Task(function (int) {
+      return int + 2
+    }, {
+      mode: 'proxy'
+    })
+
+    const proxyPass = new Task(function (int) {
+      return int + 2
+    }, {
+      mode: 'proxy-pass'
+    })
+
+    expect(proxy.getMode()).to.equal('proxy')
+    expect(proxyPass.getMode()).to.equal('proxy-pass')
+  })
 })
