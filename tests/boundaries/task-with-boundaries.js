@@ -2,7 +2,7 @@
 const Task = require('../../index')
 
 // Need to add proxy cache mode to the boundaries
-describe.skip('Boundaries tasks tests', function () {
+describe('Boundaries tasks tests', function () {
   it('Indentity + boundaries test', async function () {
     const indentity = new Task(async (argv, boundaries) => {
       const externalData = await boundaries.fetchExternalData()
@@ -36,7 +36,8 @@ describe.skip('Boundaries tasks tests', function () {
         fetchExternalData: [
           { input: [], output: { foo: false } }
         ]
-      }
+      },
+      mode: 'proxy-pass'
     })
 
     const object = await indentity.run({ bar: true })
@@ -68,7 +69,7 @@ describe.skip('Boundaries tasks tests', function () {
 
   it('Add task + boundaries + tape test', async function () {
     const add = new Task(async function (int, boundaries) {
-      const externalData = await boundaries.fetchExternalData(1)
+      const externalData = await boundaries.fetchExternalData(int)
 
       return int + externalData
     }, {
@@ -79,15 +80,16 @@ describe.skip('Boundaries tasks tests', function () {
       },
       boundariesTape: {
         fetchExternalData: [
-          { input: [1], output: 2 }
+          { input: [4], output: 2 }
         ]
-      }
+      },
+      mode: 'proxy-pass'
     })
 
-    const six = await add.run(4)
-    const seven = await add.run(5)
+    const six = await add.run(4) // From tape data
+    const fifteen = await add.run(5)
 
     expect(six).to.equal(6)
-    expect(seven).to.equal(7)
+    expect(fifteen).to.equal(15)
   })
 })
