@@ -51,6 +51,10 @@ const Task = class Task {
   }
 
   getSchema () {
+    if (!this._schema) {
+      return new Schema({})
+    }
+
     return this._schema
   }
 

@@ -136,3 +136,31 @@ describe('Validation multiple values tests', function () {
     expect(result.increment).to.equal(1)
   })
 })
+
+describe('Get Schema', function () {
+  it('To string', async function () {
+    const add2 = new Task(function (int) {
+      return int + 2
+    }, {
+      validate: {
+        value: types.number.required()
+      }
+    })
+
+    const schema = add2.getSchema()
+    const seed = schema.toString()
+
+    expect(seed).to.equal('{"value":{"type":"number","flags":{"presence":"required"}}}')
+  })
+
+  it('To string', async function () {
+    const add2 = new Task(function (int) {
+      return int + 2
+    }, {})
+
+    const schema = add2.getSchema()
+    const seed = schema.toString()
+
+    expect(seed).to.equal('{}')
+  })
+})
