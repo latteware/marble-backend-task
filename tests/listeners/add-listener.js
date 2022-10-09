@@ -1,5 +1,7 @@
 /* global describe, expect, it */
-const lov = require('lov')
+const Schema = require('@marble-seeds/schema')
+const { types } = Schema
+
 const Task = require('../../index')
 
 describe('Listener tests', function () {
@@ -46,7 +48,7 @@ describe('Listener tests', function () {
     })
 
     task.setSchema({
-      value: lov.number().required()
+      value: types.number.required()
     })
 
     task.addListener((record) => {
@@ -59,7 +61,7 @@ describe('Listener tests', function () {
 
     expect(tape.length).to.equal(1)
     expect(tape[0].input).to.deep.equal({ value: null })
-    expect(tape[0].error).to.deep.equal('value: missing required value')
+    expect(tape[0].error).to.deep.equal('"value" must be a number')
   })
 
   it('Should be multiple records', async function () {

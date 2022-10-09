@@ -1,12 +1,14 @@
 /* global describe, before, expect, it */
-const lov = require('lov')
+const Schema = require('@marble-seeds/schema')
+const { types } = Schema
+
 const Task = require('../../index')
 
 describe('Validation tests', function () {
   let task
   before(() => {
     const schema = {
-      value: lov.number().required()
+      value: types.number.required()
     }
 
     task = new Task(function (argv) {
@@ -17,15 +19,15 @@ describe('Validation tests', function () {
   })
 
   it('Should be invalid', function () {
-    const isValid = task.validate({ value: null })
+    const error = task.validate({ value: null })
 
-    expect(isValid.error).to.not.equal(null)
+    expect(error).to.not.equal(null)
   })
 
   it('Should be valid', function () {
     const isValid = task.validate({ value: 5 })
 
-    expect(isValid.error).to.equal(null)
+    expect(isValid).to.equal(undefined)
   })
 
   it('Should validate data as past of run funcion', async function () {
@@ -36,7 +38,51 @@ describe('Validation tests', function () {
       error = e
     }
 
-    expect(error.message).to.equal('value: missing required value')
+    expect(error.message).to.equal('"value" must be a number')
+  })
+
+  it('Should work well', async function () {
+    const result = await task.run({ value: 5 })
+
+    expect(result.value).to.equal(5)
+  })
+})
+
+describe('Validation tests on param', function () {
+  let task
+  before(() => {
+    const schema = {
+      value: types.number.required()
+    }
+
+    task = new Task(function (argv) {
+      return argv
+    }, {
+      validate: schema
+    })
+  })
+
+  it('Should be invalid', function () {
+    const error = task.validate({ value: null })
+
+    expect(error).to.not.equal(null)
+  })
+
+  it('Should be valid', function () {
+    const isValid = task.validate({ value: 5 })
+
+    expect(isValid).to.equal(undefined)
+  })
+
+  it('Should validate data as past of run funcion', async function () {
+    let error
+    try {
+      await task.run({ value: null })
+    } catch (e) {
+      error = e
+    }
+
+    expect(error.message).to.equal('"value" must be a number')
   })
 
   it('Should work well', async function () {
@@ -50,8 +96,8 @@ describe('Validation multiple values tests', function () {
   let task
   before(() => {
     const schema = {
-      value: lov.number().required(),
-      increment: lov.number().required()
+      value: types.number.required(),
+      increment: types.number.required()
     }
 
     task = new Task(function (argv) {
@@ -69,7 +115,7 @@ describe('Validation multiple values tests', function () {
       error = e
     }
 
-    expect(error.message).to.equal('value: missing required value')
+    expect(error.message).to.equal('"value" must be a number')
   })
 
   it('Should be on both invalid but fail in increment', async function () {
@@ -80,7 +126,7 @@ describe('Validation multiple values tests', function () {
       error = e
     }
 
-    expect(error.message).to.equal('increment: missing required value')
+    expect(error.message).to.equal('"increment" is required')
   })
 
   it('Should work well', async function () {

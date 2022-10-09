@@ -1,5 +1,6 @@
 const parseArgs = require('minimist')
-const lov = require('lov')
+
+const Schema = require('@marble-seeds/schema')
 
 const Boundary = require('./utils/boundary')
 
@@ -7,7 +8,11 @@ const Task = class Task {
   constructor (fn, conf = {}) {
     this._fn = fn
     // review how to add it in the same from on API and task
-    this._schema = conf.validate || null
+    this._schema = null
+    if (conf.validate) {
+      this._schema = new Schema(conf.validate)
+    }
+
     this._mode = conf.mode || 'proxy'
 
     this._boundariesDefinition = conf.boundaries || {}
@@ -41,8 +46,8 @@ const Task = class Task {
     this._cli = true
   }
 
-  setSchema (schema) {
-    this._schema = schema
+  setSchema (base) {
+    this._schema = new Schema(base)
   }
 
   getSchema () {
@@ -51,10 +56,10 @@ const Task = class Task {
 
   validate (argv) {
     if (!this._schema) {
-      return {}
+      return null
     }
 
-    return lov.validate(argv, this._schema)
+    return this._schema.validate(argv)
   }
 
   // Listen and emit to make it easy to have hooks
@@ -140,15 +145,15 @@ const Task = class Task {
     const boundaries = this._boundaries
 
     const q = new Promise((resolve, reject) => {
-      const isValid = this.validate(argv)
+      const error = this.validate(argv)
 
-      if (isValid.error) {
+      if (error) {
         this.emit('run', {
           input: argv,
-          error: isValid.error.message
+          error: error.message
         })
 
-        throw isValid.error
+        throw error
       }
 
       (async () => {
